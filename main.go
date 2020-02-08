@@ -14,34 +14,30 @@ func check(err error) {
 	}
 }
 
-func read(file *os.File, wg *sync.WaitGroup, line int64, len int64) {
+func read(namefile string, wg *sync.WaitGroup, position int, lines, lenline int) {
 	defer wg.Done()
-	// El paquete `io` tiene funciones que pueden ser
-	// utiles para leer archivos. Por ejemplo, una
-	// lectura como la anterior puede ser implementada
-	// más robustamente con `ReadAtLeast`
-	o3, err := file.Seek(line*(len+1), 0)
+
+	file, err := os.Open(namefile)
 	check(err)
-	b3 := make([]byte, 60)
-	n3, err := io.ReadAtLeast(file, b3, 60)
+	defer file.Close()
+
+	o3, err := file.Seek(int64(lines*position*(lenline+1)), 0)
+	check(err)
+	b3 := make([]byte, lenline)
+	n3, err := io.ReadAtLeast(file, b3, lenline)
 	check(err)
 	fmt.Printf("%d bytes @ %d: %s\n", n3, o3, string(b3))
-
-	/*scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
-	check(scanner.Err())*/
 }
 
 func main() {
+	len := 60
+	totalLines := 10
+	gorutines := 5
+	lines := totalLines / gorutines
 	var wg sync.WaitGroup
-	wg.Add(10)
-	file, err := os.Open("test.txt")
-	check(err)
-	defer file.Close()
-	for i := 0; i < 10; i++ {
-		go read(file, &wg, int64(i), 60)
+	wg.Add(gorutines)
+	for i := 0; i < gorutines; i++ {
+		go read("test.txt", &wg, i, lines, len)
 	}
 	wg.Wait()
 }
