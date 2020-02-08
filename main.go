@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"sync"
 )
 
@@ -13,7 +14,9 @@ func check(err error) {
 		log.Fatal(err)
 	}
 }
+func function(str []byte) {
 
+}
 func read(namefile string, wg *sync.WaitGroup, position int, lines, lenline int) {
 	defer wg.Done()
 
@@ -29,20 +32,24 @@ func read(namefile string, wg *sync.WaitGroup, position int, lines, lenline int)
 	for i := 0; i < lines; i++ {
 		line, _, err := reader.ReadLine()
 		check(err)
-		fmt.Printf("GoRutine: %d: %s\n", position, string(line))
+		function(line)
+		//fmt.Printf("GoRutine: %d: %s\n", position, string(line))
 	}
 
 }
 
 func main() {
+	fmt.Printf("CPUs: %d\n", runtime.NumCPU())
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	len := 60
-	totalLines := 10
-	gorutines := 5
+	totalLines := 50000000
+	gorutines := 20
 	lines := totalLines / gorutines
 	var wg sync.WaitGroup
 	wg.Add(gorutines)
 	for i := 0; i < gorutines; i++ {
-		go read("test.txt", &wg, i, lines, len)
+		go read("test2.txt", &wg, i, lines, len)
 	}
 	wg.Wait()
+	fmt.Printf("Success\n")
 }
