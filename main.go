@@ -1,8 +1,8 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"sync"
@@ -21,12 +21,17 @@ func read(namefile string, wg *sync.WaitGroup, position int, lines, lenline int)
 	check(err)
 	defer file.Close()
 
-	o3, err := file.Seek(int64(lines*position*(lenline+1)), 0)
+	reader := bufio.NewReader(file)                           // creates a new reader
+	_, err = reader.Discard(lines * position * (lenline + 1)) // discard the following 64 bytes
 	check(err)
-	b3 := make([]byte, lenline)
-	n3, err := io.ReadAtLeast(file, b3, lenline)
-	check(err)
-	fmt.Printf("%d bytes @ %d: %s\n", n3, o3, string(b3))
+	// use isPrefix if is needed, this example doesn't use it
+	// read line until a new line is found
+	for i := 0; i < lines; i++ {
+		line, _, err := reader.ReadLine()
+		check(err)
+		fmt.Printf("GoRutine: %d: %s\n", position, string(line))
+	}
+
 }
 
 func main() {
