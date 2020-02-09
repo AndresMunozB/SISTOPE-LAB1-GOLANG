@@ -7,8 +7,16 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
+func track(msg string) (string, time.Time) {
+	return msg, time.Now()
+}
+
+func duration(msg string, start time.Time) {
+	log.Printf("%v: %v\n", msg, time.Since(start))
+}
 func check(err error) {
 	if err != nil {
 		log.Fatal(err)
@@ -35,9 +43,10 @@ func transformLine(str string) string {
 	return result
 }
 func main() {
-	seed := int64(4)
+	defer duration(track("Execution Time:"))
+	seed := int64(8)
 	lines := 50000000
-	f, err := os.Create("test2.txt")
+	f, err := os.Create("test_" + strconv.Itoa(lines) + ".txt")
 	check(err)
 
 	r := rand.New(rand.NewSource(seed))
@@ -47,7 +56,6 @@ func main() {
 		fmt.Fprintln(f, str)
 	}
 	err = f.Close()
-	check(err)
-	fmt.Println("File written successfully")
+	fmt.Println("File written successfully.")
 
 }
